@@ -114,6 +114,10 @@ export default defineConfig({
         background: rgba(255, 255, 255, 0.12);
       }
 
+      html, body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      }
+
       button,select,input,option {
         outline: none;
         -webkit-appearance: none
