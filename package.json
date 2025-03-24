@@ -3,11 +3,11 @@
   "version": "1.1.6",
   "scripts": {
     "dev": "astro dev",
-    "start": "astro dev",
+    "start:prod": "node dist/server/entry.mjs",
     "build": "astro build",
     "build:vercel": "OUTPUT=vercel astro build",
     "build:netlify": "OUTPUT=netlify astro build",
-    "preview": "astro preview",
+    "start": "node dist/server/entry.mjs",
     "astro": "astro",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx,.astro",
     "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx,.astro --fix",
