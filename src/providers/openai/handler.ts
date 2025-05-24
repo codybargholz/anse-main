@@ -18,7 +18,7 @@ export const handleRapidPrompt: Provider['handleRapidPrompt'] = async(prompt, gl
     botId: 'temp',
     globalSettings: {
       ...globalSettings,
-      model: 'gpt-3.5-turbo',
+      model: 'gpt-4o',
       temperature: 0.4,
       maxTokens: 2048,
       top_p: 1,
@@ -40,7 +40,7 @@ export const handlePromptCategory: Provider['handlePromptCategory'] = async(prom
     botId: 'promptcategory',
     globalSettings: {
       ...globalSettings,
-      model: 'gpt-3.5-turbo',
+      model: 'gpt-4o',
       temperature: 0.0,
       maxTokens: 2048,
       top_p: 1,
@@ -63,7 +63,7 @@ export const handlePromptName: Provider['handlePromptName'] = async(prompt, glob
     botId: 'promptname',
     globalSettings: {
       ...globalSettings,
-      model: 'gpt-3.5-turbo',
+      model: 'gpt-4o',
       temperature: 0.0,
       maxTokens: 2048,
       top_p: 1,

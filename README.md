@@ -1,14 +1,12 @@
 ![Banner](https://user-images.githubusercontent.com/1998168/235366625-e615e68d-592c-4f18-9c9f-1e5cd1778557.png)
 
-# Anse
+# Archaea Chat
 
-English | [简体中文](./README.zh-CN.md)
+A fully optimized UI for AI Chats, forked from Anse and enhanced with the latest OpenAI models.
 
-Anse is a fully optimized UI for AI Chats.
-
-- 🍿 **Live preview**: https://anse.app
-- 📖 **Documentation**: https://docs.anse.app
-- ✨ **Release Notes**: https://github.com/anse-app/anse/releases
+- 🧬 **Ancient Intelligence**: Named after the primordial domain of life that thrives in extreme environments
+- 🚀 **Latest Models**: Supports GPT-4.1, o3, o4-mini, and other cutting-edge reasoning models
+- 🔬 **Research-Ready**: Built for experimental AI interactions and deep intellectual exploration
 
 ## Features
 

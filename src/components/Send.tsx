@@ -1,4 +1,4 @@
-import { Match, Switch, createSignal, onMount } from 'solid-js'
+import { Match, Switch, createSignal, onMount, createEffect } from 'solid-js'
 import { useStore } from '@nanostores/solid'
 import { createShortcut } from '@solid-primitives/keyboard'
 import { currentErrorMessage, isSendBoxFocus, scrollController } from '@/stores/ui'
@@ -22,17 +22,28 @@ export default () => {
 
   const [inputPrompt, setInputPrompt] = createSignal('')
   const [footerClass, setFooterClass] = createSignal('')
+  const [textareaHeight, setTextareaHeight] = createSignal(56) // Base height in pixels
+  
   const isEditing = () => inputPrompt() || $isSendBoxFocus()
   const currentConversation = () => {
     return $conversationMap()[$currentConversationId()]
   }
   const isStreaming = () => !!$streamsMap()[$currentConversationId()]
   const isLoading = () => !!$loadingStateMap()[$currentConversationId()]
+  const hasContent = () => inputPrompt().trim().length > 0
 
   const adjustTextareaHeight = (element: HTMLTextAreaElement) => {
-    element.style.height = '0';
-    const scrollHeight = Math.min(element.scrollHeight, 250);
-    element.style.height = `${scrollHeight}px`;
+    // Reset height to get accurate scrollHeight
+    element.style.height = '56px'
+    const scrollHeight = element.scrollHeight
+    
+    // Calculate new height with constraints
+    const minHeight = 56
+    const maxHeight = 280
+    const newHeight = Math.max(minHeight, Math.min(maxHeight, scrollHeight))
+    
+    element.style.height = `${newHeight}px`
+    setTextareaHeight(newHeight)
   }
 
   onMount(() => {
@@ -40,9 +51,20 @@ export default () => {
       $isSendBoxFocus() && handleSend()
     })
 
+    createShortcut(['Meta', 'Enter'], () => {
+      $isSendBoxFocus() && handleSend()
+    })
+
     useMobileScreen(() => {
       setFooterClass('sticky bottom-0 left-0 right-0 overflow-hidden')
     })
+  })
+
+  // Auto-adjust height when content changes
+  createEffect(() => {
+    if (inputRef && inputPrompt()) {
+      adjustTextareaHeight(inputRef)
+    }
   })
 
   const stateType = () => {
@@ -58,73 +80,163 @@ export default () => {
 
   const EmptyState = () => (
     <div
-      class="max-w-base h-full fi flex-row gap-2"
+      class="group relative max-w-base h-full fi flex-row gap-4 px-6 transition-all duration-300 hover:bg-base-100/50"
       onClick={() => {
         isSendBoxFocus.set(true)
-        inputRef.focus()
+        inputRef?.focus()
       }}
     >
-      <div class="flex-1 op-30 text-sm">{t('send.placeholder')}</div>
+      <div class="flex-1 text-sm text-gray-500 dark:text-gray-400 transition-colors group-hover:text-gray-700 dark:group-hover:text-gray-300">
+        {t('send.placeholder')}
+      </div>
+      <div class="opacity-40 transition-opacity group-hover:opacity-60">
+        <div class="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 fi justify-center">
+          <div class="i-carbon-send text-white text-sm" />
+        </div>
+      </div>
     </div>
   )
 
   const EditState = () => (
-    <div class="h-full flex flex-col wrapper-input">
-      <div class="flex-1 relative text-wrapper">
+    <div class="relative bg-base-100/30 backdrop-blur-sm border-t border-base transition-all duration-300">
+      {/* Main input container */}
+      <div 
+        class="relative max-w-base mx-auto"
+        style={{ "min-height": `${Math.max(textareaHeight(), 56)}px` }}
+      >
+        {/* Textarea */}
         <textarea
           ref={inputRef!}
           placeholder={t('send.placeholder')}
           autocomplete="off"
-          onFocus={(e) => { adjustTextareaHeight(e.currentTarget); }}
-          onBlur={() => { isSendBoxFocus.set(false) }}
-          onInput={(e) => { 
-            setInputPrompt(e.currentTarget.value);
-            adjustTextareaHeight(e.currentTarget);
+          value={inputPrompt()}
+          onFocus={() => {
+            isSendBoxFocus.set(true)
+            adjustTextareaHeight(inputRef)
+          }}
+          onBlur={() => {
+            if (!inputPrompt().trim()) {
+              isSendBoxFocus.set(false)
+            }
+          }}
+          onInput={(e) => {
+            setInputPrompt(e.currentTarget.value)
+            adjustTextareaHeight(e.currentTarget)
           }}
           onKeyDown={(e) => {
-            e.key === 'Enter' && !e.isComposing && !e.shiftKey && handleSend()
+            if (e.key === 'Enter' && !e.isComposing && !e.shiftKey && hasContent()) {
+              e.preventDefault()
+              handleSend()
+            }
           }}
-          class="h-full w-full absolute inset-0 py-4 px-[calc(max(1.5rem,(100%-48rem)/2))] scroll-pa-4 input-base text-sm fg-base overflow-y-auto whitespace-pre-wrap word-break-break-word"
+          class="w-full resize-none border-0 bg-transparent px-6 py-4 pr-16 text-sm leading-6 placeholder:text-gray-400 focus:outline-none focus:ring-0 transition-all duration-200"
+          style={{ height: `${textareaHeight()}px` }}
         />
-      </div>
-      <div class="fi justify-between gap-2 h-14 px-[calc(max(1.5rem,(100%-48rem)/2)-0.5rem)] border-t border-base">
-        <div>
-          {/* <Button
-            icon="i-carbon-plug"
-            onClick={() => {}}            
-          /> */}
+        
+        {/* Send button - positioned absolutely to float over textarea */}
+        <div class="absolute right-3 bottom-3 transition-all duration-200">
+          <button
+            onClick={handleSend}
+            disabled={!hasContent()}
+            class={`
+              group relative overflow-hidden rounded-xl p-2.5 transition-all duration-300 transform
+              ${hasContent() 
+                ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/25 hover:shadow-xl hover:shadow-emerald-500/30 hover:scale-105 active:scale-95' 
+                : 'bg-gray-200 dark:bg-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed'
+              }
+            `}
+          >
+            {/* Animated background for active state */}
+            {hasContent() && (
+              <div class="absolute inset-0 bg-gradient-to-r from-emerald-600 to-teal-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            )}
+            
+            {/* Icon */}
+            <div class={`
+              relative z-10 transition-transform duration-200
+              ${hasContent() ? 'group-hover:translate-x-0.5 group-hover:-translate-y-0.5' : ''}
+            `}>
+              <div class="i-carbon-send text-lg" />
+            </div>
+            
+            {/* Ripple effect */}
+            {hasContent() && (
+              <div class="absolute inset-0 rounded-xl opacity-0 group-active:opacity-20 bg-white transition-opacity duration-150" />
+            )}
+          </button>
         </div>
-        <Button
-          icon="i-carbon-send"
-          onClick={handleSend}
-          variant={inputPrompt() ? 'primary' : 'normal'}
-          // prefix={t('send.button')}
-        />
+      </div>
+      
+      {/* Bottom hint bar */}
+      <div class="max-w-base mx-auto px-6 pb-3">
+        <div class="flex items-center justify-between text-xs text-gray-400 dark:text-gray-500">
+          <div class="flex items-center gap-4">
+            <span class="fi gap-1">
+              <div class="i-carbon-keyboard text-xs" />
+              <span>{navigator.platform.includes('Mac') ? '⌘' : 'Ctrl'} + Enter to send</span>
+            </span>
+            <span class="fi gap-1">
+              <div class="i-carbon-return text-xs" />
+              <span>Shift + Enter for new line</span>
+            </span>
+          </div>
+          <div class="text-right opacity-60">
+            {inputPrompt().length > 0 && (
+              <span>{inputPrompt().length} characters</span>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   )
 
   const ErrorState = () => (
-    <div class="max-w-base h-full flex items-end flex-col justify-between gap-8 sm:(flex-row items-center) py-4 text-error text-sm">
-      <div class="flex-1 w-full">
-        <div class="fi gap-0.5 mb-1">
-          <span i-carbon-warning />
-          <span class="font-semibold">{$currentErrorMessage()?.code}</span>
+    <div class="max-w-base mx-auto h-full flex items-center justify-between gap-4 px-6 py-4 bg-red-50 dark:bg-red-900/20 border-t border-red-200 dark:border-red-800">
+      <div class="flex-1">
+        <div class="flex items-center gap-2 mb-2 text-red-700 dark:text-red-400">
+          <div class="i-carbon-warning-filled text-lg" />
+          <span class="font-semibold text-sm">{$currentErrorMessage()?.code}</span>
         </div>
-        <div>{$currentErrorMessage()?.message}</div>
+        <div class="text-sm text-red-600 dark:text-red-300 leading-relaxed">
+          {$currentErrorMessage()?.message}
+        </div>
       </div>
-      <div
-        class="border border-error px-2 py-1 rounded-md hv-base hover:bg-white"
+      <button
+        class="px-3 py-1.5 text-sm border border-red-300 dark:border-red-600 text-red-700 dark:text-red-400 rounded-lg hover:bg-red-100 dark:hover:bg-red-800/50 transition-colors"
         onClick={() => { currentErrorMessage.set(null) }}
       >
         Dismiss
+      </button>
+    </div>
+  )
+
+  const LoadingState = () => (
+    <div class="max-w-base mx-auto h-full fi flex-row gap-4 px-6">
+      <div class="flex items-center gap-3 flex-1">
+        {/* Modern loading animation */}
+        <div class="flex space-x-1">
+          <div class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" style={{ "animation-delay": "0ms" }} />
+          <div class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" style={{ "animation-delay": "150ms" }} />
+          <div class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" style={{ "animation-delay": "300ms" }} />
+        </div>
+        <span class="text-sm text-gray-600 dark:text-gray-300">Processing your request...</span>
       </div>
+      <button
+        class="px-4 py-2 text-sm border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+        onClick={() => { handleAbortFetch() }}
+      >
+        Stop
+      </button>
     </div>
   )
 
   const clearPrompt = () => {
     setInputPrompt('')
     isSendBoxFocus.set(false)
+    if (inputRef) {
+      inputRef.style.height = '56px'
+      setTextareaHeight(56)
+    }
   }
 
   const handleAbortFetch = () => {
@@ -132,63 +244,49 @@ export default () => {
     clearPrompt()
   }
 
-  const LoadingState = () => (
-    <div class="max-w-base h-full fi flex-row gap-2">
-      <div class="flex-1 op-50">Thinking...</div>
-      <div
-        class="border border-base-100 px-2 py-1 rounded-md text-sm op-40 hv-base hover:bg-white"
-        onClick={() => { handleAbortFetch() }}
-      >
-        Abort
-      </div>
-    </div>
-  )
-
   const handleSend = () => {
-    if (!inputRef.value)
-      return
+    const content = inputPrompt().trim()
+    if (!content) return
+    
     if (!currentConversation())
       addConversation()
 
     const controller = new AbortController()
     globalAbortController.set(controller)
-    handlePrompt(currentConversation(), inputRef.value, controller.signal)
+    handlePrompt(currentConversation(), content, controller.signal)
     clearPrompt()
     scrollController().scrollToBottom()
-    
-    // Reset the textarea height
-    if (inputRef) {
-      inputRef.style.height = '54px'
-    }
   }
 
   const stateRootClass = () => {
+    const baseClasses = 'relative shrink-0 transition-all duration-300 z-10'
+    
     if (stateType() === 'normal')
-      return 'hv-base'
+      return `${baseClasses} border-t border-base hover:bg-base-100/20`
     else if (stateType() === 'error')
-      return 'bg-red/8'
+      return `${baseClasses} border-t border-red-200 dark:border-red-800`
     else if (stateType() === 'loading')
-      return 'loading-anim bg-base-100'
+      return `${baseClasses} border-t border-emerald-200 dark:border-emerald-800 bg-emerald-50/30 dark:bg-emerald-900/10`
     else if (stateType() === 'editing')
-      return 'bg-base-100'
-    return ''
+      return `${baseClasses}`
+    return baseClasses
   }
 
   const stateHeightClass = () => {
     if (stateType() === 'normal')
-      return 'px-6 h-14'
+      return 'h-16'
     else if (stateType() === 'error')
-      return 'px-6'
+      return 'min-h-16'
     else if (stateType() === 'loading')
-      return 'px-6 h-14'
+      return 'h-16'
     else if (stateType() === 'editing')
-      return 'h-54'  // Original height for text input area
+      return '' // Dynamic height based on content
     return ''
   }
 
   return (
-    <div class={`relative shrink-0 border-t border-base pb-[env(safe-area-inset-bottom)] transition transition-colors duration-300 z-10 ${stateRootClass()} ${footerClass()}`}>
-      <div class={`relative transition transition-height duration-240 ${stateHeightClass()}`}>
+    <div class={`${stateRootClass()} ${footerClass()} pb-[env(safe-area-inset-bottom)]`}>
+      <div class={`${stateHeightClass()}`}>
         <Switch fallback={<EmptyState />}>
           <Match when={stateType() === 'error'}>
             <ErrorState />
