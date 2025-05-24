@@ -8,6 +8,7 @@ interface Props {
   variant?: 'normal' | 'primary' | 'ghost'
   prefix?: JSXElement
   children?: JSXElement
+  className?: string
   onClick: () => void
 }
 
@@ -19,7 +20,7 @@ export default (props: Props) => {
     lg: content || props.prefix ? 'px-3 h-10 text-sm gap-1.5' : 'w-10 h-10 text-sm',
   }[props.size || 'md'])
   const buttonVariantClass = () => ({
-    normal: 'bg-base-100 border border-base hover:(bg-base-200 border-base-100)',
+    normal: 'bg-base-100 border border-base hover:(bg-base-200 border-base-100) dark:hover:(bg-[#252525] border-[#303030])',
     primary: 'bg-teal-600 dark:bg-teal-700 text-white border border-transparent hover:(bg-teal-700 dark:bg-teal-800)',
     ghost: 'bg-transparent border border-base hover:(bg-base-100 border-base-100)',
   }[props.variant || 'normal'])
@@ -34,6 +35,7 @@ export default (props: Props) => {
         'fcc rounded-md cursor-pointer transition-colors',
         buttonVariantClass(),
         buttonSizeClass(),
+        props.className || ''
       ].join(' ')}
       onClick={props.onClick}
     >

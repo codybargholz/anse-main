@@ -29,6 +29,12 @@ export default () => {
   const isStreaming = () => !!$streamsMap()[$currentConversationId()]
   const isLoading = () => !!$loadingStateMap()[$currentConversationId()]
 
+  const adjustTextareaHeight = (element: HTMLTextAreaElement) => {
+    element.style.height = '0';
+    const scrollHeight = Math.min(element.scrollHeight, 250);
+    element.style.height = `${scrollHeight}px`;
+  }
+
   onMount(() => {
     createShortcut(['Control', 'Enter'], () => {
       $isSendBoxFocus() && handleSend()
@@ -63,25 +69,29 @@ export default () => {
   )
 
   const EditState = () => (
-    <div class="h-full flex flex-col">
-      <div class="flex-1 relative">
+    <div class="h-full flex flex-col wrapper-input">
+      <div class="flex-1 relative text-wrapper">
         <textarea
           ref={inputRef!}
           placeholder={t('send.placeholder')}
           autocomplete="off"
+          onFocus={(e) => { adjustTextareaHeight(e.currentTarget); }}
           onBlur={() => { isSendBoxFocus.set(false) }}
-          onInput={() => { setInputPrompt(inputRef.value) }}
+          onInput={(e) => { 
+            setInputPrompt(e.currentTarget.value);
+            adjustTextareaHeight(e.currentTarget);
+          }}
           onKeyDown={(e) => {
             e.key === 'Enter' && !e.isComposing && !e.shiftKey && handleSend()
           }}
-          class="h-full w-full absolute inset-0 py-4 px-[calc(max(1.5rem,(100%-48rem)/2))] scroll-pa-4 input-base text-sm"
+          class="h-full w-full absolute inset-0 py-4 px-[calc(max(1.5rem,(100%-48rem)/2))] scroll-pa-4 input-base text-sm fg-base overflow-y-auto whitespace-pre-wrap word-break-break-word"
         />
       </div>
       <div class="fi justify-between gap-2 h-14 px-[calc(max(1.5rem,(100%-48rem)/2)-0.5rem)] border-t border-base">
         <div>
           {/* <Button
             icon="i-carbon-plug"
-            onClick={() => {}}
+            onClick={() => {}}            
           /> */}
         </div>
         <Button
@@ -145,6 +155,11 @@ export default () => {
     handlePrompt(currentConversation(), inputRef.value, controller.signal)
     clearPrompt()
     scrollController().scrollToBottom()
+    
+    // Reset the textarea height
+    if (inputRef) {
+      inputRef.style.height = '54px'
+    }
   }
 
   const stateRootClass = () => {
@@ -167,12 +182,12 @@ export default () => {
     else if (stateType() === 'loading')
       return 'px-6 h-14'
     else if (stateType() === 'editing')
-      return 'h-54'
+      return 'h-54'  // Original height for text input area
     return ''
   }
 
   return (
-    <div class={`relative shrink-0 border-t border-base pb-[env(safe-area-inset-bottom)] transition transition-colors duration-300  ${stateRootClass()} ${footerClass()}`}>
+    <div class={`relative shrink-0 border-t border-base pb-[env(safe-area-inset-bottom)] transition transition-colors duration-300 z-10 ${stateRootClass()} ${footerClass()}`}>
       <div class={`relative transition transition-height duration-240 ${stateHeightClass()}`}>
         <Switch fallback={<EmptyState />}>
           <Match when={stateType() === 'error'}>

@@ -9,7 +9,7 @@ interface Props {
 export default (props: Props) => {
   const containerBaseClass = {
     left: 'w-[260px] h-100dvh border-r',
-    right: 'w-[300px] h-100dvh border-l',
+    right: 'w-[300px] h-100dvh border-l sidebar-right',
   }[props.direction]
 
   return (
@@ -19,6 +19,7 @@ export default (props: Props) => {
         containerBaseClass,
         props.class || '',
       ].join(' ')}
+      style={props.direction === 'right' ? { zIndex: 1 } : {}}
     >
       { props.children }
     </aside>

@@ -1,0 +1,47 @@
+/* Fix textarea wrapping */
+textarea {
+  white-space: pre-wrap !important;
+  overflow-wrap: break-word !important;
+  word-break: break-word !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Make the input and button more mobile-friendly */
+/* Ensure clickable area is large enough on touchscreens */
+.fcc.rounded-md {
+  min-width: 44px !important;
+  min-height: 44px !important;
+  transform: translateY(-5px) !important;
+}
+
+/* Fix for z-index issues on mobile screens */
+@media (max-width: 640px) {
+  /* Ensure input area stays above sidebar in mobile view */
+  .sticky.bottom-0 {
+    z-index: 10 !important;
+  }
+  
+  /* Fix text color in dark mode */
+  html.dark textarea,
+  html.dark input {
+    color: #dadada !important;
+  }
+  
+  /* Fix button visibility and positioning */
+  .fi.justify-between .fcc {
+    z-index: 20 !important;
+    position: relative !important;
+  }
+  
+  /* Fix textarea width on mobile to prevent overflow */
+  textarea {
+    width: calc(100% - 20px) !important;
+    padding-right: 20px !important;
+  }
+  
+  /* Ensure button is properly styled in dark mode */
+  html.dark .bg-teal-600 {
+    background-color: #059669 !important;
+  }
+}

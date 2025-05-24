@@ -1,0 +1,53 @@
+/* Send button fix for mobile view */
+
+/* Ensure the send button is visible on all devices */
+.send-button-wrapper {
+  position: relative;
+  z-index: 9999 !important; 
+  display: inline-block !important;
+  right: 10px !important;
+  bottom: 2px !important;
+}
+
+/* Ensure z-index stacking works properly */
+#app {
+  isolation: isolate;
+}
+
+/* Ensure button container is properly positioned */
+.send-button-container {
+  position: relative !important;
+  z-index: 900 !important;
+}
+
+/* Fix button styling */
+.send-button {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  position: relative !important;
+  z-index: 999 !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+}
+
+/* Make sure the sidebar doesn't overlap the input in mobile view */
+@media (max-width: 640px) {
+  .sidebar-right,
+  aside.border-l {
+    z-index: 1 !important;
+  }
+  
+  /* Fix for input text color in dark mode */
+  html.dark textarea,
+  html.dark input {
+    color: white !important;
+  }
+  
+  /* Ensure input area is above sidebar */
+  .relative.shrink-0.border-t {
+    position: relative;
+    z-index: 50 !important;
+  }
+}

@@ -1,0 +1,40 @@
+/* Direct button fix */
+.fixed-send-button {
+  position: fixed !important;
+  bottom: 20px !important;
+  right: 20px !important;
+  width: 40px !important;
+  height: 40px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 8px !important;
+  background-color: #10b981 !important;
+  color: white !important;
+  z-index: 99999 !important; /* Ultra high z-index */
+  border: none !important;
+  cursor: pointer !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15) !important;
+  pointer-events: auto !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Dark mode specific styling */
+html.dark .fixed-send-button {
+  background-color: #059669 !important;  /* slightly darker green for dark mode */
+}
+
+/* Ensure proper z-index stacking */
+.fixed-send-button-container {
+  position: relative !important;
+  z-index: 500 !important;
+}
+
+/* Make sure our button is above the sidebar */
+@media (max-width: 640px) {
+  aside.border-l, 
+  .sidebar-right {
+    z-index: 10 !important;
+  }
+}

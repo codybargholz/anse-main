@@ -1,0 +1,63 @@
+/* Ensure proper text wrapping in the textarea */
+
+/* Set the textarea to have automatic word wrapping */
+textarea {
+  white-space: pre-wrap !important;
+  overflow-wrap: break-word !important;
+  word-break: break-word !important;
+  overflow-y: auto !important;
+  text-rendering: optimizeLegibility !important;
+  box-sizing: border-box !important;
+  max-width: 100% !important;
+  max-height: 250px !important; /* ~10 lines of text */
+  overflow-y: auto !important;
+  resize: none !important;
+  transition: height 0.1s ease-in-out !important;
+}
+
+/* Fix wrapper for better layout */
+.wrapper-input {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  height: auto !important;
+  transition: height 0.1s ease-in-out !important;
+}
+
+.text-wrapper {
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  max-width: 100%;
+  box-sizing: border-box;
+  max-height: 250px !important; /* Match textarea max-height */
+  height: auto !important;
+  min-height: 54px !important;
+}
+
+/* Adjust padding to prevent text from getting hidden behind the settings panel */
+@media (max-width: 1024px) {
+  textarea.input-base {
+    padding-right: 20px !important;
+    margin-right: 10px !important;
+    width: calc(100% - 30px) !important;
+  }
+}
+
+/* Increase the text area height slightly to give more space for typing */
+.h-54 {
+  height: auto !important;
+  min-height: 120px !important;
+  max-height: 250px !important;
+}
+
+/* Ensure proper text behavior in edit state */
+.h-full.flex.flex-col {
+  position: relative;
+}
+
+/* Ensure the input container properly contains the text */
+.flex-1.relative {
+  overflow: hidden;
+  position: relative;
+}
